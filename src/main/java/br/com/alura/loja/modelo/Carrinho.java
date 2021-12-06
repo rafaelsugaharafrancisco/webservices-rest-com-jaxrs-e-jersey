@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.thoughtworks.xstream.XStream;
+
 public class Carrinho {
 
 	private List<Produto> produtos = new ArrayList<Produto>();
@@ -42,6 +44,10 @@ public class Carrinho {
 		return id;
 	}
 	
+	public void toXml() {
+		
+	}
+	
 	public void remove(long id) {
 		for (Iterator iterator = produtos.iterator(); iterator.hasNext();) {
 			Produto produto = (Produto) iterator.next();
@@ -68,6 +74,10 @@ public class Carrinho {
 	
 	public List<Produto> getProdutos() {
 		return produtos;
+	}
+
+	public String toXML() {
+		return new XStream().toXML(this);
 	}
 
 }
