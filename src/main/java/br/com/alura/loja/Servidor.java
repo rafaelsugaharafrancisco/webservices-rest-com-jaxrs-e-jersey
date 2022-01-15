@@ -9,29 +9,20 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 public class Servidor {
 	
-	public static HttpServer server;
-	
-	public static void main(String[] args) {
-		inicializa();
-		System.out.println("Servidor rodando na porta 8080");
+	public static void main(String[] args) throws IOException {
+		HttpServer server = inicializa();
 		
-		try {
-			finaliza();
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-		}
+		System.out.println("Servidor rodando na porta 8080");
+		System.in.read(); // Leitura da tecla ENTER
+		
+		server.stop(); 
 	}
 	
-	public static void inicializa() {
+	public static HttpServer inicializa() {
 		URI uri = URI.create("http://localhost:8080/");
+		
 		ResourceConfig config = new ResourceConfig().packages("br.com.alura.loja");
 		
-		server = GrizzlyHttpServerFactory.createHttpServer(uri, config);
+		return GrizzlyHttpServerFactory.createHttpServer(uri, config);
 	}
-	
-	public static void finaliza() throws IOException {
-		System.in.read();
-		server.stop();
-	}
-
 }
