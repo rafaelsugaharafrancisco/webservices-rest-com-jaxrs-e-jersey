@@ -25,22 +25,24 @@ import br.com.alura.loja.modelo.Produto;
 public class ClienteTest {
 	
 	private HttpServer server;
+	private Client client;
+	private WebTarget target;
 	
 	@Before
-	public void inicializaServidor() {
+	public void inicio() {
 		this.server = Servidor.inicializa();
+		this.client = ClientBuilder.newClient();		
+		this.target = this.client.target("http://localhost:8080");		
 	}
 	
 	@After
-	public void finalizaServidor() {
+	public void fim() {
 		this.server.stop();
 	}
 	
 	@Test
 	public void testaConexaoComServidor() {
-		Client client = ClientBuilder.newClient();
-		
-		WebTarget target = client.target("http://www.mocky.io");
+		WebTarget target = this.client.target("http://www.mocky.io");
 		String conteudo = target.path("/v2/52aaf5deee7ba8c70329fb7d").request().get(String.class);
 		
 		assertTrue(conteudo.contains("<rua>Rua Vergueiro 3185"));
@@ -48,10 +50,7 @@ public class ClienteTest {
 	
 	@Test
 	public void testaQueBuscarUmCarrinhoTrazOCarrinhoEsperado() {
-		Client client = ClientBuilder.newClient();
-		
-		WebTarget target = client.target("http://localhost:8080");
-		String conteudo = target.path("/carrinhos/1").request().get(String.class);
+		String conteudo = this.target.path("/carrinhos/1").request().get(String.class);
 		Carrinho carrinho = (Carrinho)new XStream().fromXML(conteudo);
 		
 		Assert.assertEquals("Rua Vergueiro 3185, 8 andar", carrinho.getRua());
@@ -59,18 +58,19 @@ public class ClienteTest {
 	
 	@Test
 	public void testaAdicionaCarrinho() {
-		Client client = ClientBuilder.newClient();
-		
-		WebTarget target = client.target("http://localhost:8080");
 		Carrinho carrinho = new Carrinho().adiciona(new Produto(314L, "iphone 9", 3300.00, 1));
 		carrinho.para("Rua Odemis, 292", "Sao Paulo");
 		
 		Entity<String> entity = Entity.entity(carrinho.toXML(), MediaType.APPLICATION_XML);
 		
-		Response response = target.path("/carrinhos").request().post(entity);
+		Response response = this.target.path("/carrinhos").request().post(entity);
 		
-		assertEquals("<status> Carrinho criado com sucesso </status>", response.readEntity(String.class));
+		assertEquals(201, response.getStatus());
 		
+		String location = response.getHeaderString("Location");
+		String conteudo = this.client.target(location).request().get(String.class);
+		
+		assertTrue(conteudo.contains("iphone 9"));
 	}
 
 }
